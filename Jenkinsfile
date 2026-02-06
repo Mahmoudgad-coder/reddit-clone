@@ -10,7 +10,7 @@ pipeline {
         RELEASE = "1.0.0"
         DOCKER_USER = "mmgad"
         DOCKER_PASS = 'dockerhub'
-        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_NAME =  "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
 	
     }
@@ -50,14 +50,7 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
              }
          }
-		stage ('Cleanup Artifacts') {
-             steps {
-                 script {
-                      sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-                      sh "docker rmi ${IMAGE_NAME}:latest"
-                 }
-             }
-         }
+		
 		
 	 stage("Build & Push Docker Image") {
              steps {
@@ -72,13 +65,20 @@ pipeline {
                  }
              }
          }
-	 stage("Trivy Image Scan") {
+	  stage("Trivy Image Scan") {
              steps {
                  script {
 	              sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image mmgad/reddit-clone-pipeline:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table > trivyimage.txt')
                  }
              }
          }
-    
+     stage ('Cleanup Artifacts') {
+             steps {
+                 script {
+                      sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                      sh "docker rmi ${IMAGE_NAME}:latest"
+                 }
+             }
+         }
 }
 }
