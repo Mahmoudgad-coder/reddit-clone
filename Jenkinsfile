@@ -50,6 +50,15 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
              }
          }
+		stage ('Cleanup Artifacts') {
+             steps {
+                 script {
+                      sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                      sh "docker rmi ${IMAGE_NAME}:latest"
+                 }
+             }
+         }
+		
 	 stage("Build & Push Docker Image") {
              steps {
                  script {
@@ -70,13 +79,6 @@ pipeline {
                  }
              }
          }
-    stage ('Cleanup Artifacts') {
-             steps {
-                 script {
-                      sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
-                      sh "docker rmi ${IMAGE_NAME}:latest"
-                 }
-             }
-         }
+    
 }
 }
